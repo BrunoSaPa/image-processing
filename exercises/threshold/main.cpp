@@ -1,27 +1,33 @@
 #include <iostream>
 #include <opencv2/opencv.hpp>
 
+using namespace std;
+using namespace cv;
+
 int main()
 {
 
     // Open the input image from the repository root.
-    cv::Mat inputImage = cv::imread("resources/greyscale.png", cv::IMREAD_GRAYSCALE);
+    Mat inputImage = cv::imread("resources/gradient_horizontal.png", IMREAD_GRAYSCALE);
     if (inputImage.empty())
     {
-        std::cerr << "Could not open resources/greyscale.png\n";
+        cerr << "Could not open resources/gradient_horizontal.png\n";
         return 1;
     }
 
+    //Display original
+    imshow("Original image", inputImage);
 
     //new image
-    cv::Mat A(inputImage.rows, inputImage.cols, CV_8U);
+    Mat A(inputImage.rows, inputImage.cols, CV_8U);
 
-    // Apply threshold on grayscale image (white or black only)
+    //Binary thresholding
+    int threshold = 127;
     for (int i = 0; i < inputImage.rows; i++)
     {
         for (int j = 0; j < inputImage.cols; j++)
         {
-            if (inputImage.at<uchar>(i, j) > 127)
+            if (inputImage.at<uchar>(i, j) > threshold)
             {
                 A.at<uchar>(i, j) = 255;
             }
@@ -32,13 +38,85 @@ int main()
         }
     }
 
+    //Display modified
+    imshow("Binary", A);
 
-    //Create a window and display the image
-    cv::imshow("Modified image", A);
-    cv::imshow("Original image", inputImage);
+    // Binary inverse thresholding
+    for (int i = 0; i < inputImage.rows; i++)
+    {
+        for (int j = 0; j < inputImage.cols; j++)
+        {
+            if (inputImage.at<uchar>(i, j) < threshold)
+            {
+                A.at<uchar>(i, j) = 255;
+            }
+            else
+            {
+                A.at<uchar>(i, j) = 0;
+            }
+        }
+    }
+
+    imshow("Binary Inverse", A);
+
+    // Truncate thresholding
+    for (int i = 0; i < inputImage.rows; i++)
+    {
+        for (int j = 0; j < inputImage.cols; j++)
+        {
+            if (inputImage.at<uchar>(i, j) > threshold)
+            {
+                A.at<uchar>(i, j) = threshold;
+            }
+            else
+            {
+                A.at<uchar>(i, j) = inputImage.at<uchar>(i, j);
+            }
+        }
+    }
+
+    imshow("Truncate",A);
+
+
+    //To zero thresholding
+    for (int i = 0; i < inputImage.rows; i++)
+    {
+        for (int j = 0; j < inputImage.cols; j++)
+        {
+            if (inputImage.at<uchar>(i, j) < threshold)
+            {
+                A.at<uchar>(i, j) = 0;
+            }
+            else
+            {
+                A.at<uchar>(i, j) = inputImage.at<uchar>(i, j);
+            }
+        }
+    }
+
+    imshow("To Zero", A);
+
+    //To zero inverse thresholding
+    for (int i = 0; i < inputImage.rows; i++)
+    {
+        for (int j = 0; j < inputImage.cols; j++)
+        {
+            if (inputImage.at<uchar>(i, j) > threshold)
+            {
+                A.at<uchar>(i, j) = 0;
+            }
+            else
+            {
+                A.at<uchar>(i, j) = inputImage.at<uchar>(i, j);
+            }
+        }
+    }
+
+    imshow("To Zero Inverse", A);
+
 
     // Wait for a keystroke in the window
-    cv::waitKey(0);
+    waitKey(0);
 
     return 0;
 }
