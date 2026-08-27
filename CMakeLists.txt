@@ -29,7 +29,7 @@ if(BUILD_EXERCISES)
 
     # New exercises are picked up automatically when they follow this layout:
     #
-    #   exercises/exercise_03/main.cpp
+    #   exercises/<name>/main.cpp
     #
     # CONFIGURE_DEPENDS asks CMake to re-run configuration when a new matching
     # source file is added, so adding an exercise does not require editing this
@@ -37,13 +37,13 @@ if(BUILD_EXERCISES)
     file(
         GLOB exercise_sources
         CONFIGURE_DEPENDS
-        "${PROJECT_SOURCE_DIR}/exercises/exercise_*/main.cpp"
+        "${PROJECT_SOURCE_DIR}/exercises/*/main.cpp"
     )
     list(SORT exercise_sources)
 
     if(NOT exercise_sources)
         message(FATAL_ERROR
-            "No exercises found. Add exercises/exercise_XX/main.cpp and configure again."
+            "No exercises found. Add exercises/<name>/main.cpp and configure again."
         )
     endif()
 

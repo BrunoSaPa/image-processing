@@ -62,7 +62,7 @@ Exercises that use `cv::imshow` need a graphical desktop session and wait for a 
 
 ## Add a new exercise
 
-Create a directory whose name starts with `exercise_` and put its entry point at `main.cpp`:
+Create a directory under `exercises/` and put its entry point at `main.cpp`:
 
 ```text
 exercises/
