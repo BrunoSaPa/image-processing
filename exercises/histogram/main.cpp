@@ -1,5 +1,8 @@
 #include <iostream>
 #include <opencv2/opencv.hpp>
+#include <opencv2/highgui.hpp>
+#include <opencv2/imgproc.hpp>
+
 
 using namespace std;
 using namespace cv;
@@ -40,8 +43,22 @@ int main()
 
 
 
+    //draw histogram with rectangles
+    Mat histImage(400, 512, CV_8UC1, Scalar(255));
+
+
+    //display histogram values in the image with rectangles
+    for (int i = 0; i < 256; i++)
+    {
+        int height = count[i] / 1000; // Scale down for display purposes
+        rectangle(histImage, Point(i * 2, 400), Point(i * 2 + 2, 400 - height), Scalar(0), FILLED);
+    }
+
+
+    imshow("Histogram", histImage);
+
     //wait 
-    //waitKey(0);
+    waitKey(0);
 
     return 0;
 
