@@ -17,7 +17,7 @@ int main()
         return 1; 
     }
 
-    //imshow("Original image", inputImage);
+    imshow("Original image", inputImage);
 
 
     int count[256]={0};
@@ -28,10 +28,9 @@ int main()
         {
             count[(int)inputImage.at<uchar>(i, j)]++;
         }
-        cout << endl;
     }
 
-    // Display the histogram
+    // Display the histogram values
     int sum = 0;
     for (int i = 0; i < 256; i++)
     {
@@ -42,16 +41,33 @@ int main()
     cout << "Image size: " << inputImage.rows << " x " << inputImage.cols << " total pixels: " << inputImage.rows * inputImage.cols << endl;
 
 
+    const int histWidth = 512;
+    const int histHeight = 400;
+    const int bins = 256;
 
-    //draw histogram with rectangles
-    Mat histImage(400, 512, CV_8UC1, Scalar(255));
+    Mat histImage(histHeight, histWidth, CV_8UC1, Scalar(0));
 
+    int maxCount = *std::max_element(count, count + bins);
+    float binWidth = static_cast<float>(histWidth) / bins;
 
-    //display histogram values in the image with rectangles
-    for (int i = 0; i < 256; i++)
+    for (int i = 0; i < bins; ++i)
     {
-        int height = count[i] / 1000; // Scale down for display purposes
-        rectangle(histImage, Point(i * 2, 400), Point(i * 2 + 2, 400 - height), Scalar(0), FILLED);
+        int barHeight = (maxCount > 0)
+            ? cvRound(static_cast<float>(count[i]) / maxCount * (histHeight - 1))
+            : 0;
+
+        int x1 = cvRound(i * binWidth);
+        int x2 = cvRound((i + 1) * binWidth) - 1;
+        int y1 = histHeight - 1;
+        int y2 = histHeight - 1 - barHeight;
+
+        rectangle(
+            histImage,
+            Point(x1, y1),
+            Point(x2, y2),
+            Scalar(255),
+            FILLED
+        );
     }
 
 

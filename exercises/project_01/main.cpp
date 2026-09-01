@@ -33,7 +33,7 @@ std::string generateFilename(int counter) {
 //////////////////////////////////////////////////////////
 int main() {
 
-    cv::FileStorage fs("./config.xml", cv::FileStorage::READ);
+    cv::FileStorage fs("exercises/project_01/config.xml", cv::FileStorage::READ);
 
     if (!fs.isOpened()) {
         std::cerr << "ERROR: Could not open config.xml" << std::endl;
