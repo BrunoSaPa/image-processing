@@ -9,7 +9,7 @@ using namespace cv;
 
 int main()
 {
-    Mat inputImage = imread("resources/pique.png", IMREAD_GRAYSCALE);
+    Mat inputImage = imread("resources/chihiro.png", IMREAD_GRAYSCALE);
     
     if (inputImage.empty())
     {
@@ -20,6 +20,7 @@ int main()
     imshow("Original image", inputImage);
 
 
+    //histogram
     int count[256]={0};
 
     for (int i = 0; i < inputImage.rows; i++)
@@ -45,7 +46,7 @@ int main()
     const int histHeight = 400;
     const int bins = 256;
 
-    Mat histImage(histHeight, histWidth, CV_8UC1, Scalar(0));
+    Mat histImage(histHeight, histWidth, CV_8U, Scalar(0));
 
     int maxCount = *std::max_element(count, count + bins);
     float binWidth = static_cast<float>(histWidth) / bins;
@@ -72,6 +73,36 @@ int main()
 
 
     imshow("Histogram", histImage);
+
+    //calculate PMF from histogram
+    float PMF[256] = {0.0};
+    for (int i = 0; i < bins; ++i)
+    {
+        PMF[i] = count[i] / (float)(inputImage.rows * inputImage.cols);
+    }
+
+    //calculate CDF from PMF
+    float CDF[256] = {0.0};
+    CDF[0] = PMF[0];
+    for (int i = 1; i < bins; ++i)
+    {
+        CDF[i] = CDF[i - 1] + PMF[i];
+    }
+
+    Mat newImage = inputImage.clone();
+
+    //apply histogram equalization
+    for (int i = 0; i < newImage.rows; ++i)
+    {
+        for (int j = 0; j < newImage.cols; ++j)
+        {
+            int pixelValue = (int)newImage.at<uchar>(i, j);
+            newImage.at<uchar>(i, j) = (uchar)(CDF[pixelValue] * 255);
+        }
+    }
+
+    imshow("Equalized image", newImage);
+
 
     //wait 
     waitKey(0);
