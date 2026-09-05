@@ -6,6 +6,9 @@
 #include <iomanip>
 #include <sstream>
 #include <cstring>
+#include <fstream>
+#include <cmath>
+#include <algorithm>
 
 using namespace cv;
 using namespace std;

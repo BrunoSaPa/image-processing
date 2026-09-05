@@ -41,9 +41,9 @@ int main() {
                   << std::endl;
         //return -1;
     }
-
     int board_w, board_h;
     float squareSize;
+    int numberOfFrames = 20;
     int baseLine = 0;
     Size textSize;
     Point textOrigin;
@@ -52,10 +52,49 @@ int main() {
     fs["BoardSize_Width"] >> board_w;
     fs["BoardSize_Height"] >> board_h;
     fs["Square_Size"] >> squareSize;
+    fs["Calibrate_NrOfFrameToUse"] >> numberOfFrames;
+
+    if (numberOfFrames <= 0)
+        numberOfFrames = 20;
     fs.release();
 
 
     cv::Size boardSize(board_w, board_h);
+
+    int experiment;
+
+std::cout << "Select experiment:" << std::endl;
+std::cout << "1 - Flexible / Center" << std::endl;
+std::cout << "2 - Flexible / Full" << std::endl;
+std::cout << "3 - Rigid / Center" << std::endl;
+std::cout << "4 - Rigid / Full" << std::endl;
+std::cout << "> ";
+
+std::cin >> experiment;
+
+std::string experimentName;
+
+switch (experiment) {
+    case 1:
+        experimentName = "exp1_flexible_center";
+        break;
+
+    case 2:
+        experimentName = "exp2_flexible_full";
+        break;
+
+    case 3:
+        experimentName = "exp3_rigid_center";
+        break;
+
+    case 4:
+        experimentName = "exp4_rigid_full";
+        break;
+
+    default:
+        std::cerr << "Invalid experiment." << std::endl;
+        return -1;
+}
 
     cv::VideoCapture cap(0);
     if (!cap.isOpened()) {
@@ -96,7 +135,7 @@ int main() {
             fready = true;
     }
 
-    while (successful < 20) {
+    while (successful < numberOfFrames) {
 
         //////////////////////////////
         // 1. Show live frame (1 sec)
@@ -104,7 +143,7 @@ int main() {
         //cv::Mat frame;
         fready = false;
         
-        for (int i=0;i<20;i++) {
+        for (int i=0;i<numberOfFrames;i++) {
             cap >> frame;     
             cv::imshow("Camera", frame);
             cv::waitKey(10);
@@ -125,11 +164,27 @@ int main() {
             cv::cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
             cv::cornerSubPix(gray, corners, cv::Size(11, 11), cv::Size(-1, -1),
                 cv::TermCriteria(cv::TermCriteria::EPS + cv::TermCriteria::COUNT, 30, 0.1));
+            cv::Mat rawFrame = frame.clone();
+            cv::Mat displayFrame = rawFrame.clone();
 
-            cv::drawChessboardCorners(frame, boardSize, corners, true);
+            cv::drawChessboardCorners(
+                displayFrame,
+                boardSize,
+                corners,
+                true
+            );
 
-            std::string file = generateFilename(counter++);
-            Image_Captured img(frame, corners, file);
+            std::string file =
+                "exercises/project_01/" +
+                experimentName +
+                "_" +
+                generateFilename(counter++);
+
+            Image_Captured img(
+                rawFrame,
+                corners,
+                file
+            );
             capturedImages.push_back(img);
 
             successful++;
@@ -141,7 +196,11 @@ int main() {
 
             textnext.x = frame.cols - 2 * textSize.width - 10;
             textnext.y=frame.rows - 3 * baseLine - 10;
-            msg = format("%d/%d Undist", successful, 20);
+            msg = format(
+                "%d/%d Undist",
+                successful,
+                numberOfFrames
+            );
             putText(frame, msg, textOrigin, 1, 2, GREEN, 3);
 
             cv::imshow("Camera", frame);
@@ -150,7 +209,11 @@ int main() {
             cv::imshow("Camera", frame);
             cv::waitKey(250);
 
-            std::cout << "Captured " << successful << " / 20" << std::endl;
+            std::cout << "Captured "
+            << successful
+            << " / "
+            << numberOfFrames
+            << std::endl;
         }
 
         else {
@@ -168,7 +231,21 @@ int main() {
     Camera_Calibration calibManager(capturedImages);
     Calibration_Data data = calibManager.performCalibration(boardSize, squareSize);
 
-    data.saveToXML("camera_parameters.xml");
+    std::string base =
+        "exercises/project_01/" +
+        experimentName;
+
+    data.saveToXML(
+        base + "_parameters.xml"
+    );
+
+    data.saveErrorsToCSV(
+        base + "_errors.csv"
+    );
+
+    data.saveSummaryToCSV(
+        base + "_summary.csv"
+    );
 
 
     ////////////////////////////////////////////////////////
