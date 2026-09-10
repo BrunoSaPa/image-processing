@@ -47,6 +47,8 @@ if(BUILD_EXERCISES)
         )
     endif()
 
+    add_cv_exercise(measure "${PROJECT_SOURCE_DIR}/exercises/project_01/measure/MainMeasure.cpp")
+
     set(exercise_targets)
 
     foreach(exercise_source IN LISTS exercise_sources)

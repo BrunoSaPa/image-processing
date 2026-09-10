@@ -793,8 +793,19 @@ void measurementMode(
 // MAIN
 // ============================================================
 
+#include "CompareMeasurements.hpp"
+
 int main(int argc, char** argv)
 {
+    if (argc >= 2 && std::string(argv[1]) == "--compare")
+    {
+        try { return compareMeasurements(argc, argv); }
+        catch (const std::exception& e) {
+            std::cerr << "ERROR: " << e.what() << '\n';
+            cv::destroyAllWindows();
+            return 1;
+        }
+    }
     // ------------------------------------------------------------
     // Default configuration
     // ------------------------------------------------------------
