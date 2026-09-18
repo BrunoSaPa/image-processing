@@ -9,7 +9,7 @@ using namespace cv;
 
 int main()
 {
-    Mat inputImage = imread("resources/chihiro.png", IMREAD_GRAYSCALE);
+    Mat inputImage = imread("resources/tepito.png", IMREAD_GRAYSCALE);
     
     if (inputImage.empty())
     {
