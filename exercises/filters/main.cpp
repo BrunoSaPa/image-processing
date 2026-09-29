@@ -238,6 +238,9 @@ int main()
     imshow("Difference D-E", differenceDE);
 
 
+
+
+
     waitKey(0);
 
     return 0;
