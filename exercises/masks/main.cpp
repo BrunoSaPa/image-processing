@@ -67,6 +67,24 @@ int main()
 
     imshow("Masked", B);
 
+    Mat C(inputImage.rows, inputImage.cols, CV_8U);
+
+    for(int i = 0; i < A.rows; i++)
+    {
+        for (int j = 0; j < A.cols; j++)
+        {
+            if (A.at<uchar>(i, j) == 255)
+            {
+                C.at<uchar>(i, j) = inputImage.at<uchar>(i, j);
+            }
+            else
+            {
+                C.at<uchar>(i, j) = inputImage2.at<uchar>(i, j);
+            }
+        }
+    }
+
+    imshow("Masked 2", C);
 
     
 
