@@ -62,7 +62,8 @@ if(BUILD_EXERCISES)
             )
         endif()
 
-        add_cv_exercise("${exercise_target}" "${exercise_source}")
+        add_cv_exercise("${exercise_target}" "${exercise_source}"
+            exercises/random/main.cpp)
         list(APPEND exercise_targets "${exercise_target}")
     endforeach()
 
