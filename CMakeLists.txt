@@ -48,6 +48,7 @@ if(BUILD_EXERCISES)
     endif()
 
     add_cv_exercise(measure "${PROJECT_SOURCE_DIR}/exercises/project_01/measure/MainMeasure.cpp")
+    add_cv_exercise(project2 "${PROJECT_SOURCE_DIR}/exercises/project_2nd_midterm/main.cpp")
 
     set(exercise_targets)
 
