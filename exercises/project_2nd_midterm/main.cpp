@@ -21,7 +21,7 @@ struct Application {
     bool recalculate = false;
     bool returnToMenu = false;
     string status = "Adjust parameters, then click Recalculate.";
-    // Trackbar positions (integers). Physical values are converted in process().
+
     int cannyLow = 50, cannyHigh = 150, cannyAperture = 0, cannyL2 = 0;
     int harrisBlock = 2, harrisAperture = 0, harrisK = 4, harrisThreshold = 1;
     int lineRho = 10, lineTheta = 10, lineVotes = 60, lineMinLength = 40, lineMaxGap = 10;
@@ -56,50 +56,103 @@ static void onControlMouse(int event, int x, int y, int, void* userdata) {
     if (BACK_BTN.contains(Point(x, y))) app.returnToMenu = true;
 }
 
-static void track(const string& name, int* value, int maximum) {
-    createTrackbar(name, CONTROL_WINDOW, value, maximum);
+static void track(const string& name, int initialVal, int maximum) {
+    createTrackbar(name, CONTROL_WINDOW, nullptr, maximum);
+    setTrackbarPos(name, CONTROL_WINDOW, initialVal);
 }
 
 static void setupTrackbars(Application& a) {
     switch (a.detector) {
         case 1:
-            track("Lower threshold", &a.cannyLow, 500);
-            track("Upper threshold", &a.cannyHigh, 500);
-            track("Aperture (0=3,1=5,2=7)", &a.cannyAperture, 2);
-            track("L2 gradient (0/1)", &a.cannyL2, 1);
+            track("Lower threshold", a.cannyLow, 500);
+            track("Upper threshold", a.cannyHigh, 500);
+            track("Aperture (0=3,1=5,2=7)", a.cannyAperture, 2);
+            track("L2 gradient (0/1)", a.cannyL2, 1);
             break;
         case 2:
-            track("Block size (2 + value)", &a.harrisBlock, 18);
-            track("Aperture (0=3,1=5,2=7)", &a.harrisAperture, 2);
-            track("k (value / 100)", &a.harrisK, 15);
-            track("Threshold (% of max)", &a.harrisThreshold, 100);
+            track("Block size (2 + value)", a.harrisBlock, 18);
+            track("Aperture (0=3,1=5,2=7)", a.harrisAperture, 2);
+            track("k (value / 100)", a.harrisK, 15);
+            track("Threshold (% of max)", a.harrisThreshold, 100);
             break;
         case 3:
-            track("rho (value / 10 px)", &a.lineRho, 50);
-            track("theta (value / 10 deg)", &a.lineTheta, 900);
-            track("Vote threshold", &a.lineVotes, 300);
-            track("Min line length (px)", &a.lineMinLength, 500);
-            track("Max line gap (px)", &a.lineMaxGap, 300);
+            track("rho (value / 10 px)", a.lineRho, 50);
+            track("theta (value / 10 deg)", a.lineTheta, 900);
+            track("Vote threshold", a.lineVotes, 300);
+            track("Min line length (px)", a.lineMinLength, 500);
+            track("Max line gap (px)", a.lineMaxGap, 300);
             break;
         case 4:
-            track("dp (value / 10)", &a.circleDp, 50);
-            track("Minimum center distance", &a.circleMinDist, 500);
-            track("Canny high threshold", &a.circleParam1, 500);
-            track("Center accumulator threshold", &a.circleParam2, 200);
-            track("Minimum radius", &a.circleMinRadius, 500);
-            track("Maximum radius (0=any)", &a.circleMaxRadius, 500);
+            track("dp (value / 10)", a.circleDp, 50);
+            track("Minimum center distance", a.circleMinDist, 500);
+            track("Canny high threshold", a.circleParam1, 500);
+            track("Center accumulator threshold", a.circleParam2, 200);
+            track("Minimum radius", a.circleMinRadius, 500);
+            track("Maximum radius (0=any)", a.circleMaxRadius, 500);
             break;
         case 5:
-            track("Number features (0=all)", &a.siftNFeatures, 2000);
-            track("Layers per octave", &a.siftLayers, 10);
-            track("Contrast (value / 1000)", &a.siftContrast, 200);
-            track("Edge threshold (/ 10)", &a.siftEdge, 300);
-            track("Sigma (value / 10)", &a.siftSigma, 50);
+            track("Number features (0=all)", a.siftNFeatures, 2000);
+            track("Layers per octave", a.siftLayers, 10);
+            track("Contrast (value / 1000)", a.siftContrast, 200);
+            track("Edge threshold (/ 10)", a.siftEdge, 300);
+            track("Sigma (value / 10)", a.siftSigma, 50);
             break;
     }
 }
 
-static void process(Application& a) {
+static void syncTrackbars(Application& a) {
+    switch (a.detector) {
+        case 1: {
+            int val;
+            if ((val = getTrackbarPos("Lower threshold", CONTROL_WINDOW)) >= 0) a.cannyLow = val;
+            if ((val = getTrackbarPos("Upper threshold", CONTROL_WINDOW)) >= 0) a.cannyHigh = val;
+            if ((val = getTrackbarPos("Aperture (0=3,1=5,2=7)", CONTROL_WINDOW)) >= 0) a.cannyAperture = val;
+            if ((val = getTrackbarPos("L2 gradient (0/1)", CONTROL_WINDOW)) >= 0) a.cannyL2 = val;
+            break;
+        }
+        case 2: {
+            int val;
+            if ((val = getTrackbarPos("Block size (2 + value)", CONTROL_WINDOW)) >= 0) a.harrisBlock = val;
+            if ((val = getTrackbarPos("Aperture (0=3,1=5,2=7)", CONTROL_WINDOW)) >= 0) a.harrisAperture = val;
+            if ((val = getTrackbarPos("k (value / 100)", CONTROL_WINDOW)) >= 0) a.harrisK = val;
+            if ((val = getTrackbarPos("Threshold (% of max)", CONTROL_WINDOW)) >= 0) a.harrisThreshold = val;
+            break;
+        }
+        case 3: {
+            int val;
+            if ((val = getTrackbarPos("rho (value / 10 px)", CONTROL_WINDOW)) >= 0) a.lineRho = val;
+            if ((val = getTrackbarPos("theta (value / 10 deg)", CONTROL_WINDOW)) >= 0) a.lineTheta = val;
+            if ((val = getTrackbarPos("Vote threshold", CONTROL_WINDOW)) >= 0) a.lineVotes = val;
+            if ((val = getTrackbarPos("Min line length (px)", CONTROL_WINDOW)) >= 0) a.lineMinLength = val;
+            if ((val = getTrackbarPos("Max line gap (px)", CONTROL_WINDOW)) >= 0) a.lineMaxGap = val;
+            break;
+        }
+        case 4: {
+            int val;
+            if ((val = getTrackbarPos("dp (value / 10)", CONTROL_WINDOW)) > 0) a.circleDp = val;
+            if ((val = getTrackbarPos("Minimum center distance", CONTROL_WINDOW)) > 0) a.circleMinDist = val;
+            if ((val = getTrackbarPos("Canny high threshold", CONTROL_WINDOW)) > 0) a.circleParam1 = val;
+            if ((val = getTrackbarPos("Center accumulator threshold", CONTROL_WINDOW)) > 0) a.circleParam2 = val;
+            if ((val = getTrackbarPos("Minimum radius", CONTROL_WINDOW)) >= 0) a.circleMinRadius = val;
+            if ((val = getTrackbarPos("Maximum radius (0=any)", CONTROL_WINDOW)) >= 0) a.circleMaxRadius = val;
+            break;
+        }
+        case 5: {
+            int val;
+            if ((val = getTrackbarPos("Number features (0=all)", CONTROL_WINDOW)) >= 0) a.siftNFeatures = val;
+            if ((val = getTrackbarPos("Layers per octave", CONTROL_WINDOW)) >= 0) a.siftLayers = val;
+            if ((val = getTrackbarPos("Contrast (value / 1000)", CONTROL_WINDOW)) >= 0) a.siftContrast = val;
+            if ((val = getTrackbarPos("Edge threshold (/ 10)", CONTROL_WINDOW)) >= 0) a.siftEdge = val;
+            if ((val = getTrackbarPos("Sigma (value / 10)", CONTROL_WINDOW)) >= 0) a.siftSigma = val;
+            break;
+        }
+    }
+}
+
+static void process(Application& a, bool isInitial = false) {
+    if (!isInitial) {
+        syncTrackbars(a);
+    }
     Mat output = a.original.clone();
     try {
         if (a.detector == 1) {
@@ -155,18 +208,21 @@ static void process(Application& a) {
             int minR = a.circleMinRadius;
             int maxR = a.circleMaxRadius;
             if (maxR != 0 && maxR < minR) maxR = minR;
-            HoughCircles(smooth, circles, HOUGH_GRADIENT, max(10, a.circleDp) / 10.0,
-                         max(1, a.circleMinDist), max(1, a.circleParam1),
-                         max(1, a.circleParam2), minR, maxR);
+
+            double dp = max(1.0, a.circleDp / 10.0);
+            double minDist = max(10.0, static_cast<double>(a.circleMinDist));
+            double param1 = max(10.0, static_cast<double>(a.circleParam1));
+            double param2 = max(10.0, static_cast<double>(a.circleParam2));
+
+            HoughCircles(smooth, circles, HOUGH_GRADIENT, dp, minDist, param1, param2, minR, maxR);
             for (const auto& c : circles) {
                 Point p(cvRound(c[0]), cvRound(c[1]));
                 circle(output, p, cvRound(c[2]), Scalar(0, 255, 0), 2, LINE_AA);
                 circle(output, p, 2, Scalar(0, 0, 255), FILLED, LINE_AA);
             }
             a.status = "Hough circles: " + to_string(circles.size()) + " circles";
-            cout << "Hough circles: dp=" << max(10,a.circleDp)/10.0
-                 << ", minDist=" << max(1,a.circleMinDist) << ", param1="
-                 << max(1,a.circleParam1) << ", param2=" << max(1,a.circleParam2)
+            cout << "Hough circles: dp=" << dp << ", minDist=" << minDist
+                 << ", param1=" << param1 << ", param2=" << param2
                  << ", minR=" << minR << ", maxR=" << maxR << '\n';
         } else if (a.detector == 5) {
             vector<KeyPoint> keypoints;
@@ -235,15 +291,14 @@ int main(int argc, char** argv) {
         resizeWindow(CONTROL_WINDOW, 665, 450);
         setMouseCallback(CONTROL_WINDOW, onControlMouse, &app);
         setupTrackbars(app);
-        process(app);
+        process(app, true);
         while (!app.returnToMenu) {
             if (app.recalculate) {
                 app.recalculate = false;
-                process(app);
+                process(app, false);
             }
             int key = waitKey(30);
             if (key == 27 || key == 'm' || key == 'M') app.returnToMenu = true;
-            // If either window was manually closed, return to the menu.
             if (getWindowProperty(RESULT_WINDOW, WND_PROP_VISIBLE) < 1 ||
                 getWindowProperty(CONTROL_WINDOW, WND_PROP_VISIBLE) < 1)
                 app.returnToMenu = true;
