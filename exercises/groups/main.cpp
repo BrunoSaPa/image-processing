@@ -52,7 +52,7 @@ bool growRQ(const Mat &imgori, Mat &res, int x0, int y0, int val, std::vector<Po
 
 						namedWindow("avance", WINDOW_NORMAL);
 						imshow("avance", res);
-						waitKey(10);
+						//waitKey(10);
 
 						for (int k = -1; k < 2; k++)
 						{
@@ -88,10 +88,9 @@ bool growRQ(const Mat &imgori, Mat &res, int x0, int y0, int val, std::vector<Po
 
 }
 
-
 int main()
 {
-// Load the input image in grayscale
+    // Load the input image in grayscale
     Mat inputImage = imread("resources/beans.png", IMREAD_GRAYSCALE);
     
     if (inputImage.empty())
@@ -102,6 +101,10 @@ int main()
 
     imshow("Original image", inputImage);
 
+    // Create a 3-channel color image for drawing boxes and centroids
+    Mat colorOutput;
+    cvtColor(inputImage, colorOutput, COLOR_GRAY2BGR);
+
     //apply inverse binary thresholding
     Mat binaryImage;
     double thresholdValue = 180;
@@ -109,13 +112,14 @@ int main()
 
     imshow("Binary image", binaryImage);
 
-	//image to mark regions with colors
-    Mat imageMarked(inputImage.size(), CV_32UC1, Scalar(0));
+    // image to mark regions - FIXED to CV_8UC1 so .at<uchar> works safely
+    Mat imageMarked(inputImage.size(), CV_8UC1, Scalar(0));
 
     //regions
     std::vector<std::vector<Point2d>> allRegions;
     int label1 = 100;
-	//draw regions and bounding boxes
+    
+    //draw regions and bounding boxes
     for (int y = 0; y < binaryImage.rows; y++)
     {
         for (int x = 0; x < binaryImage.cols; x++)
@@ -125,31 +129,45 @@ int main()
                 std::cout << "Starting region growing at (" << x << ", " << y << ") with label " << label1 << std::endl;
                 std::vector<Point2d> regionPoints;
                 growRQ(binaryImage, imageMarked, x, y, label1, regionPoints);
+                
                 if (!regionPoints.empty())
                 {
                     allRegions.push_back(regionPoints);
-                    //get centroid of the region
-                    double sumX = 0;
-                    double sumY = 0;
+                    
+                    double sumX = 0, sumY = 0;
+                    double minX = regionPoints[0].x, maxX = regionPoints[0].x;
+                    double minY = regionPoints[0].y, maxY = regionPoints[0].y;
+
                     for (const auto& point : regionPoints)
                     {
                         sumX += point.x;
                         sumY += point.y;
+                        
+                        // Find bounding box coordinates
+                        if (point.x < minX) minX = point.x;
+                        if (point.x > maxX) maxX = point.x;
+                        if (point.y < minY) minY = point.y;
+                        if (point.y > maxY) maxY = point.y;
                     }
+                    
                     double centroidX = sumX / regionPoints.size();
                     double centroidY = sumY / regionPoints.size();
                     std::cout << "Centroid of the region: (" << centroidX << ", " << centroidY << ")" << std::endl;
-                    //paint centroid red
-                    imageMarked.at<Vec3i>(static_cast<int>(centroidY), static_cast<int>(centroidX)) = Vec3i(0, 0, 255); // Mark centroid in red 
+                    
+                    // Draw bounding box in Green (B=0, G=255, R=0)
+                    rectangle(colorOutput, Point(minX, minY), Point(maxX, maxY), Scalar(0, 255, 0), 2);
+                    
+                    // Paint centroid in Red (B=0, G=0, R=255) using cv::circle
+                    circle(colorOutput, Point(centroidX, centroidY), 4, Scalar(0, 0, 255), -1);
                 }
                 label1 += 10; // Increment label for the next region
             }
         }
     }
 
-    imshow("Marked image", imageMarked);
+    imshow("Marked image regions", imageMarked);
+    imshow("Bounding Boxes & Centroids", colorOutput);
 
     waitKey(0);
     return 0;
 }
-
