@@ -133,14 +133,16 @@ int main()
     //open 
     Mat imageOpened(inputImage.rows, inputImage.cols, CV_8UC1, Scalar(0));
     erode(binaryImage, imageOpened, SE);
-    dilate(imageOpened, imageOpened, SE);       
-    imshow("Opened image", imageOpened);
+    Mat imageOpenedTemp(inputImage.rows, inputImage.cols, CV_8UC1, Scalar(0));
+    dilate(imageOpened, imageOpenedTemp, SE);      
+    imshow("Opened image", imageOpenedTemp);
 
     //close
     Mat imageClosed(inputImage.rows, inputImage.cols, CV_8UC1, Scalar(0));
     dilate(binaryImage, imageClosed, SE);
-    erode(imageClosed, imageClosed, SE);
-    imshow("Closed image", imageClosed);
+    Mat imageClosedTemp(inputImage.rows, inputImage.cols, CV_8UC1, Scalar(0));
+    erode(imageClosed, imageClosedTemp, SE);
+    imshow("Closed image", imageClosedTemp);
 
     waitKey(0);
 
