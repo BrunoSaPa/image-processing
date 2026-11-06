@@ -10,7 +10,7 @@ using namespace cv;
 int main()
 {
 
-    int maskSize = 9;
+    int maskSize = 3;
     Mat GassMask(maskSize,maskSize, CV_32F);
     int x0, y0, x, y;
     x0 = GassMask.cols / 2;
@@ -37,7 +37,10 @@ int main()
     }
 
     //print mask 
+    //GassMask /= totalM;
+    GassMask /= totalM;
     cout << GassMask << endl;
+    
 
     //apply mask to image
     Mat image = imread("./resources/pepper.png", IMREAD_GRAYSCALE);
